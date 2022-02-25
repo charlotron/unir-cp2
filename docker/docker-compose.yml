@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+
+  cp2-ansible-controller-container: #do not change this name or modify kubernetes/DockerFile
+    build: base
+    restart: unless-stopped
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    ports:
+      - "1022:22"
+    volumes:
+      - "~/.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys.ext"
+    depends_on:
+      - cp2-kubernetes-master-container
+      - cp2-kubernetes-worker-container
+
+  cp2-kubernetes-master-container:
+    build: kubernetes
+    container_name: cp2_kubernetes_master
+    restart: unless-stopped
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    ports:
+      - "1023:22"
+    volumes:
+      - "~/.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys.ext"
+
+  cp2-kubernetes-worker-container:
+    build: kubernetes
+    container_name: cp2_kubernetes_worker
+    restart: unless-stopped
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    ports:
+      - "1024:22"
+    volumes:
+      - "~/.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys.ext"
+    depends_on:
+      - cp2-kubernetes-master-container
