@@ -1,4 +1,4 @@
-FROM docker_cp2-ansible-controller-container
+FROM charlotron/ansible-controller
 
 ARG USER="ansible"
 ARG GROUP="ansible"

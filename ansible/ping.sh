@@ -1,0 +1,1 @@
+ansible all -m ping -i hosts --ssh-common-args='-o StrictHostKeyChecking=no'

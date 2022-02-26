@@ -1,0 +1,62 @@
+---
+
+- hosts: all
+  gather_facts: yes
+  tasks:
+    # ------- SETTING HOSTNAME
+    - name: Ansible check host file file exists.
+      stat:
+        path: /etc/hosts.save
+      register: savedhosts
+
+    - name: setting a temporary valid dns hostname to prevent problems with sudo
+      become: true
+      shell: hostname localhost
+
+    - name: bkp hosts file if not bkp already
+      become: true
+      shell: cp /etc/hosts /etc/hosts.save
+      when: savedhosts.stat.exists == False
+
+    - name: replace bkp hosts file if exists
+      become: true
+      shell: cp /etc/hosts.save /etc/hosts
+      when: savedhosts.stat.exists
+
+    - name: Adding hosts to internal resolution dns
+      become: true
+      shell: echo "{{ hostvars[item].ansible_host }}\t{{item}}" >> /etc/hosts
+      loop: "{{ groups['all'] }}"
+
+    - name: set hostname for every machine
+      become: true
+      shell: hostname "{{inventory_hostname}}"
+
+    # ------- SETTING TIMEZONE
+
+    - name: configure timezone and activate synchronization
+      become: true
+      shell: echo "Europe/Madrid" > /etc/timezone
+
+    # ------- CONFIGURING DATE/TIME SYNC WITH NTP SERVER
+
+    - name: Install the package "chrony"
+      become: true
+      apt:
+        name: chrony
+
+    - name: run chrony as a service
+      become: true
+      shell: service chrony start
+
+    - name: force time sync now
+      become: true
+      shell: chronyc -a makestep
+
+     # ------- SOME OTHER PACKAGES NEEDED
+   - name: Install the packages related to nfs (remote mount system folder) and wget to download files
+      become: true
+      apt:
+        pkg:
+          - nfs-common
+          - wget

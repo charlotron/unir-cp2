@@ -1,40 +1,70 @@
-version: '3'
+version: '2'
 
 services:
 
   cp2-ansible-controller-container: #do not change this name or modify kubernetes/DockerFile
-    build: base
+    image: charlotron/ansible-controller
     restart: unless-stopped
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
+    privileged: true
+    networks:
+      vn:
+        ipv4_address: 10.10.10.10
     ports:
-      - "1022:22"
+      - "1010:22"
     volumes:
       - "~/.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys.ext"
+      - "../ansible:/home/ansible/ansible"
     depends_on:
       - cp2-kubernetes-master-container
       - cp2-kubernetes-worker-container
+#      - cp2-nfs
+#
+#  cp2-nfs:
+#    image: charlotron/ansible-slave
+#    restart: unless-stopped
+#    privileged: true
+#    networks:
+#      vn:
+#        ipv4_address: 10.10.10.20
+#    ports:
+#      - "1020:22"
+#    volumes:
+#      - "~/.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys.ext"
+#    depends_on:
+#      - cp2-kubernetes-master-container
 
   cp2-kubernetes-master-container:
-    build: kubernetes
-    container_name: cp2_kubernetes_master
+    image: charlotron/ansible-slave
     restart: unless-stopped
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
+    privileged: true
+    networks:
+      vn:
+        ipv4_address: 10.10.10.100
     ports:
-      - "1023:22"
+      - "1100:22"
     volumes:
       - "~/.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys.ext"
 
   cp2-kubernetes-worker-container:
-    build: kubernetes
-    container_name: cp2_kubernetes_worker
+    image: charlotron/ansible-slave
     restart: unless-stopped
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
+    privileged: true
+    networks:
+      vn:
+        ipv4_address: 10.10.10.101
     ports:
-      - "1024:22"
+      - "1101:22"
     volumes:
       - "~/.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys.ext"
     depends_on:
       - cp2-kubernetes-master-container
+
+
+
+networks:
+  vn:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
+          gateway: 10.10.10.1

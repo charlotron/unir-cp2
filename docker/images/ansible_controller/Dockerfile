@@ -8,11 +8,12 @@ ARG SSH_CONFIG_DIR=$HOME/.ssh
 ENV HOME=$HOME
 
 #Install dependencies
-RUN apt-get update && \
-    apt-get install -y openssh-server software-properties-common sudo nano && \
-    apt-add-repository ppa:ansible/ansible && \
-    apt-get update && \
-    apt-get install -y ansible
+RUN apt-get update
+RUN apt-get install -y openssh-server software-properties-common sudo nano
+RUN apt-add-repository ppa:ansible/ansible
+RUN apt-get update
+RUN apt-get install -y ansible
+RUN apt-get install -y git
 
 #Create user and group ansible in docker container
 RUN groupadd $GROUP

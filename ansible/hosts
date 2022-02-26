@@ -1,0 +1,11 @@
+[all:vars]
+ansible_user=ansible
+
+[nfs]
+nfs.local ansible_host=10.10.10.20
+
+[master]
+master.local ansible_host=10.10.10.100
+
+[workers]
+worker1.local ansible_host=10.10.10.101
