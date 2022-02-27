@@ -2,7 +2,7 @@
 ansible_user=ansible
 
 [nfs]
-nfs.local ansible_host=10.10.10.20
+nfs.local ansible_host=152.228.174.36 ansible_port=1020
 
 [master]
 master.local ansible_host=10.10.10.100

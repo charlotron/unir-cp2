@@ -1,0 +1,85 @@
+---
+
+- hosts: nfs
+  tasks:
+
+  - name: Create mountable dir
+    become: true
+    file: path=/srv/nfs state=directory mode=777 owner=root group=root
+
+  - name: Create a bootup service for mounting the folder (as long as fstab mountpoints don't works on docker) called "sshfs-mount-remote-dir"
+    become: true
+    copy:
+      dest: "/srv/nfs/works!"
+      mode: a+x
+      content: |
+        remote mount worked!
+
+
+- hosts: master:workers
+  tasks:
+
+  - name: Install the package "sshfs"
+    become: true
+    apt:
+      name: sshfs
+
+  - name: Ensure sshfs not running
+    become: true
+    shell: pkill sshfs || true
+
+  - name: Create mount point dir
+    shell: test -d /home/ansible/remote/ || mkdir /home/ansible/remote/ -p || true
+
+  - name: Ensure no mount points for given dir
+    become: yes
+    shell: umount /home/ansible/remote/ || true
+    ignore_errors: yes
+
+  - name: Create a bootup service for mounting the folder (as long as fstab mountpoints don't works on docker) called "sshfs-mount-remote-dir"
+    become: true
+    copy:
+      dest: "/etc/init.d/sshfs-mount-remote-dir"
+      mode: a+x
+      content: |
+        #!/bin/sh
+
+        NFS_HOST={{ item }}
+        NFS_PORT={{ hostvars[item].ansible_port | default('22') }}
+        NFS_MOUNTABLE_DIR=/srv/nfs
+        LOCAL_MOUNT_DIR=/home/ansible/remote/
+        LOCAL_USER=ansible
+
+        log_daemon_msg () {
+            echo $@
+        }
+
+        case "$1" in
+        start)  log_daemon_msg "Mounting mount point" "sshfsmount"
+                su $LOCAL_USER -c "sshfs -o idmap=user $NFS_HOST:$NFS_MOUNTABLE_DIR -p $NFS_PORT $LOCAL_MOUNT_DIR"
+
+                ;;
+        stop)   log_daemon_msg "Stopping all sshfs instances"
+                pkill sshfs
+                RETVAL=0
+
+                log_end_msg $RETVAL
+                ;;
+        restart) log_daemon_msg "Restarting mount point" "sshfsmount"
+                $0 stop
+                $0 start
+                ;;
+        *)
+
+        esac
+        exit 0
+    loop:
+    - nfs.local
+
+  - name: Register sshfs-mount-remote-dir as a service
+    become: true
+    shell: update-rc.d sshfs-mount-remote-dir defaults
+
+  - name: Run sshfs-mount-remote-dir service
+    become: true
+    shell: service sshfs-mount-remote-dir start

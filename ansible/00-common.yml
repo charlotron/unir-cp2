@@ -4,6 +4,7 @@
   gather_facts: yes
   tasks:
     # ------- SETTING HOSTNAME
+
     - name: Ansible check host file file exists.
       stat:
         path: /etc/hosts.save
@@ -53,8 +54,9 @@
       become: true
       shell: chronyc -a makestep
 
-     # ------- SOME OTHER PACKAGES NEEDED
-   - name: Install the packages related to nfs (remote mount system folder) and wget to download files
+    # ------- SOME OTHER PACKAGES NEEDED
+
+    - name: Install the packages related to nfs (remote mount system folder) and wget to download files
       become: true
       apt:
         pkg:
