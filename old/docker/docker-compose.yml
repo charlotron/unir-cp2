@@ -17,28 +17,22 @@ services:
     depends_on:
       - cp2-kubernetes-master-container
       - cp2-kubernetes-worker-container
-#      - cp2-nfs
+      - cp2-nfs
 
-#  #CARE: This image cannot work in a Mac computer nfs modules cannot be enabled for docker engine!!!
-#  #This image requires proper modules installed on host machine, execute as root:
-#   # modprobe nfs
-#   # modprobe nfsd
-#  cp2-nfs:
-#    image: charlotron/ansible-slave
-#    restart: unless-stopped
-#    privileged: true
-#    cap_add:
-#      - SYS_ADMIN
-#    networks:
-#      vn:
-#        ipv4_address: 10.10.10.20
-#    ports:
-#      - "1020:22"
-#    volumes:
-#      - "~/.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys.ext"
-#      - "../nfs/srv:/srv"
-#    depends_on:
-#      - cp2-kubernetes-master-container
+  cp2-nfs:
+    image: charlotron/ansible-slave
+    restart: unless-stopped
+    privileged: true
+    networks:
+      vn:
+        ipv4_address: 10.10.10.20
+    ports:
+      - "1020:22"
+    volumes:
+      - "~/.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys.ext"
+      - "../nfs/srv:/srv"
+    depends_on:
+      - cp2-kubernetes-master-container
 
   cp2-kubernetes-master-container:
     image: charlotron/ansible-slave

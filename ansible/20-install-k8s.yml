@@ -1,0 +1,11 @@
+---
+
+- hosts: all
+  gather_facts: yes
+  tasks:
+
+    - name: Install the packages related to k8s
+      become: true
+      apt:
+        pkg:
+          - docker.io

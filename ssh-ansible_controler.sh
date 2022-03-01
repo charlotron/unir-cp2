@@ -1,1 +1,0 @@
-ssh ansible@localhost -p 1010 -o "StrictHostKeyChecking=no"

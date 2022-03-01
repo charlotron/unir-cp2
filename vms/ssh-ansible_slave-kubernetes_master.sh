@@ -1,0 +1,1 @@
+ssh ansible@192.168.1.120 -o "StrictHostKeyChecking=no"

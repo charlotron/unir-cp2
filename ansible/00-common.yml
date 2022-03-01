@@ -62,3 +62,15 @@
         pkg:
           - nfs-common
           - wget
+
+    # ------- DISABLE SWAP (USING HDD SPACE AS TEMPORARY RAM EXTENSION)
+
+    - name: Disable swap
+      become: true
+      shell: swapoff -a || true #This prevents failures in docker
+
+    - name: Disable swap in fstab
+      become: true
+      shell: sed -i '/swap/d' /etc/fstab
+
+

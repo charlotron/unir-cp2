@@ -1,0 +1,1 @@
+ansible-playbook -i hosts 20-install-k8s.yml -v --ssh-common-args='-o StrictHostKeyChecking=no'
