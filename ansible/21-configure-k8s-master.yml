@@ -1,0 +1,39 @@
+---
+
+- hosts: master
+  gather_facts: yes
+  become: true
+  tasks:
+
+    - name: Clear kubernetes cluster if already set any
+      shell:  kubeadm reset -f
+
+    - name: Initialize kubernetes cluster
+      shell:  kubeadm init --apiserver-advertise-address={{hostvars[inventory_hostname].ansible_host}} --pod-network-cidr=10.10.100.0/24
+
+    - name: Preparing .kube dir
+      file:
+        path: ~/.kube
+        state: directory
+        mode: 0755
+
+    - name: Copy admin.conf to .kube dir
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: ~/.kube/config
+        remote_src: yes
+
+    - name: Install Calico
+      shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+    - name: Generate new joining token
+      shell: kubeadm token create --print-join-command
+      #shell: kubeadm token create --print-join-command | sed -E 's/[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+(:[0-9]+)/{{hostvars[inventory_hostname].ansible_host}}\1/g'
+      register: kubernetes_join_command
+
+    - name: Printing generated join command
+      debug:
+        msg: "{{ kubernetes_join_command.stdout }}"
+
+    - name: Save join command in local file
+      local_action: copy content="{{ kubernetes_join_command.stdout_lines[0] }} --v=5" dest=".buffer/kubernetes_join_cmd" mode=0777

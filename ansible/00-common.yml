@@ -52,25 +52,5 @@
 
     - name: force time sync now
       become: true
-      shell: chronyc -a makestep
-
-    # ------- SOME OTHER PACKAGES NEEDED
-
-    - name: Install the packages related to nfs (remote mount system folder) and wget to download files
-      become: true
-      apt:
-        pkg:
-          - nfs-common
-          - wget
-
-    # ------- DISABLE SWAP (USING HDD SPACE AS TEMPORARY RAM EXTENSION)
-
-    - name: Disable swap
-      become: true
-      shell: swapoff -a || true #This prevents failures in docker
-
-    - name: Disable swap in fstab
-      become: true
-      shell: sed -i '/swap/d' /etc/fstab
-
+      shell: chronyd -q 'server pool.ntp.org iburst'
 

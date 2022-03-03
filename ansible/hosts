@@ -7,6 +7,6 @@ master.local ansible_host=10.10.10.20
 [workers]
 worker1.local ansible_host=10.10.10.30
 
-[nfs]
-nfs.local ansible_host=10.10.10.40
+[sshfs]
+sshfs.local ansible_host=10.10.10.40
 

@@ -1,0 +1,17 @@
+- hosts: workers
+  become: yes
+  gather_facts: yes
+
+  tasks:
+
+    - name: Clear kubernetes node if already set any
+      shell:  kubeadm reset -f
+
+    - name: Copy previously stored join command from kubernetes cluster
+      copy:
+       src: .buffer/kubernetes_join_cmd
+       dest: /root/kubernetes_join.sh
+       mode: 0777
+
+    - name: Join the cluster executing the command
+      command: sh /root/kubernetes_join.sh

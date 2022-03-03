@@ -1,11 +1,69 @@
 ---
 
-- hosts: all
+- hosts: master:workers
+  become: true
   gather_facts: yes
   tasks:
 
-    - name: Install the packages related to k8s
-      become: true
+    # ------- DISABLE SWAP (USING HDD SPACE AS TEMPORARY RAM EXTENSION)
+
+    - name: Disable swap
+      shell: swapoff -a
+
+    - name: Disable swap in fstab
+      shell: sed -i '/swap/d' /etc/fstab
+
+    # ----------- INSTALL DOCKER -----
+    - name: Install packages related to docker
       apt:
+        update_cache: true
         pkg:
-          - docker.io
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+
+    - name: Add official docker gpg key
+      shell: rm -f /usr/share/keyrings/docker-archive-keyring.gpg && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+    - name: Configure the "stable" docker repository
+      shell: echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" |  tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    - name: Install docker
+      apt:
+        update_cache: true
+        pkg:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+
+    - name: Fix cgroup for docker
+      copy:
+        dest: "/etc/docker/daemon.json"
+        mode: a+x
+        content: |
+          {
+              "exec-opts": ["native.cgroupdriver=systemd"]
+          }
+
+    - name: Reload docker daemon
+      shell: systemctl daemon-reload
+
+    - name: Restart docker service
+      shell: systemctl restart docker
+
+    # ----------- INSTALL K8S -----
+
+    - name: Add kubernetes repo key
+      shell: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg |  apt-key add -
+
+    - name: Add kubernetes repo list
+      shell: echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" |  tee /etc/apt/sources.list.d/kubernetes.list
+
+    - name: Install the packages related to k8s
+      apt:
+        update_cache: true
+        pkg:
+          - kubelet
+          - kubeadm
+          - kubectl

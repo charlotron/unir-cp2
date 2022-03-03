@@ -1,16 +1,15 @@
 ---
 
-- hosts: nfs
+- hosts: sshfs
+  become: true
   tasks:
 
   - name: Create mountable dir
-    become: true
-    file: path=/srv/nfs state=directory mode=777 owner=root group=root
+    file: path=/srv/shared state=directory mode=777 owner=root group=root
 
-  - name: Create a bootup service for mounting the folder (as long as fstab mountpoints don't works on docker) called "sshfs-mount-remote-dir"
-    become: true
+  - name: Create a test file to check if remote mount worked
     copy:
-      dest: "/srv/nfs/works!"
+      dest: "/srv/shared/works!"
       mode: a+x
       content: |
         remote mount worked!
@@ -46,7 +45,7 @@
 
         NFS_HOST={{ item }}
         NFS_PORT={{ hostvars[item].ansible_port | default('22') }}
-        NFS_MOUNTABLE_DIR=/srv/nfs
+        NFS_MOUNTABLE_DIR=/srv/shared
         LOCAL_MOUNT_DIR=/home/ansible/remote/
         LOCAL_USER=ansible
 
@@ -74,7 +73,7 @@
         esac
         exit 0
     loop:
-    - nfs.local
+    - sshfs.local
 
   - name: Register sshfs-mount-remote-dir as a service
     become: true
