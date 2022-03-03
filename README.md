@@ -7,5 +7,5 @@ nfs: hace falta montar el volumen persistente en /srv
 sudo modprobe nfs
 sudo modprobe nfsd
 
-Se prueba la posibilidad de montar un servidor sshfs en lugar de nfs, da problemas con docker y parece que en ciertas circunstancias parece más eficiente:
-https://blog.ja-ke.tech/2019/08/27/nas-performance-sshfs-nfs-smb.html
+Se prueba la posibilidad de montar un servidor nfs en lugar de nfs, da problemas con docker y parece que en ciertas circunstancias parece más eficiente:
+https://blog.ja-ke.tech/2019/08/27/nas-performance-nfs-nfs-smb.html

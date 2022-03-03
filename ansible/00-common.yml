@@ -1,6 +1,7 @@
 ---
 
 - hosts: all
+  become: true
   gather_facts: yes
   tasks:
     # ------- SETTING HOSTNAME
@@ -10,47 +11,98 @@
         path: /etc/hosts.save
       register: savedhosts
 
-    - name: setting a temporary valid dns hostname to prevent problems with sudo
-      become: true
+    - name: Setting a temporary valid dns hostname to prevent problems with sudo
       shell: hostname localhost
 
-    - name: bkp hosts file if not bkp already
-      become: true
+    - name: Bkp hosts file if not bkp already
       shell: cp /etc/hosts /etc/hosts.save
       when: savedhosts.stat.exists == False
 
-    - name: replace bkp hosts file if exists
-      become: true
+    - name: Replace bkp hosts file if exists
       shell: cp /etc/hosts.save /etc/hosts
       when: savedhosts.stat.exists
 
     - name: Adding hosts to internal resolution dns
-      become: true
       shell: echo "{{ hostvars[item].ansible_host }}\t{{item}}" >> /etc/hosts
       loop: "{{ groups['all'] }}"
 
-    - name: set hostname for every machine
-      become: true
+    - name: Set hostname for every machine
       shell: hostname "{{inventory_hostname}}"
+
+    - name: Persist hostname bootup
+      shell: echo "{{ inventory_hostname }}" > /etc/hostname
 
     # ------- SETTING TIMEZONE
 
-    - name: configure timezone and activate synchronization
-      become: true
-      shell: echo "Europe/Madrid" > /etc/timezone
+    - name: Configure timezone and activate synchronization
+      shell: timedatectl set-ntp true
 
     # ------- CONFIGURING DATE/TIME SYNC WITH NTP SERVER
 
     - name: Install the package "chrony"
-      become: true
       apt:
         name: chrony
 
-    - name: run chrony as a service
-      become: true
-      shell: service chrony start
+    - name: Enable service chronyd
+      ansible.builtin.systemd:
+        name: chronyd
+        enabled: yes
+        masked: no
+        state: started
 
-    - name: force time sync now
-      become: true
+    - name: Sleep for a while then continue with play (seems the service takes a little to wake up)
+      wait_for:
+        timeout: 10
+
+    - name: Enable ntp
+      shell: timedatectl set-ntp true
+
+    - name: Sync date now
       shell: chronyd -q 'server pool.ntp.org iburst'
 
+    # ------- DISABLE SELINUX IF NEEDED
+
+    - name: Disable selinux if found (we dont want to fail if not found)
+      shell: test -d /etc/selinux/config || sed -i s/=enforcing/=disabled/g /etc/selinux/config || true
+
+    # ------- DISABLE SWAP (USING HDD SPACE AS TEMPORARY RAM EXTENSION)
+
+    - name: Clear fstab defined swap mounts
+      shell: sed -i '/swap/d' /etc/fstab
+
+    - name: Create a bootup service for disabling swap, seems previous command are not fully reliant, this is a manual disable of swap for each wake up.
+      become: true
+      copy:
+        dest: "/etc/init.d/swap-disable"
+        mode: a+x
+        content: |
+          #!/bin/sh
+
+          log_daemon_msg () {
+              echo $@
+          }
+
+          case "$1" in
+          start)  log_daemon_msg "Mounting mount point" "nfsmount"
+                  swapoff -a
+                  ;;
+          stop)   log_daemon_msg "Stopping all swap disable (does nothing)"
+                  RETVAL=0
+                  log_end_msg $RETVAL
+                  ;;
+          restart) log_daemon_msg "Restarting mount point" "nfsmount"
+                  $0 stop
+                  $0 start
+                  ;;
+          *)
+
+          esac
+          exit 0
+
+    - name: Register swap-disable as a service
+      become: true
+      shell: update-rc.d swap-disable defaults
+
+    - name: Run swap-disable service
+      become: true
+      shell: service swap-disable start

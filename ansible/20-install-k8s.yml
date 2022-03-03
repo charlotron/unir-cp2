@@ -5,14 +5,6 @@
   gather_facts: yes
   tasks:
 
-    # ------- DISABLE SWAP (USING HDD SPACE AS TEMPORARY RAM EXTENSION)
-
-    - name: Disable swap
-      shell: swapoff -a
-
-    - name: Disable swap in fstab
-      shell: sed -i '/swap/d' /etc/fstab
-
     # ----------- INSTALL DOCKER -----
     - name: Install packages related to docker
       apt:

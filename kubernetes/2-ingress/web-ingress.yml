@@ -1,0 +1,21 @@
+---
+
+#To check if pods are linked to this service: "kubectl describe ingress web-ing", under the "Endpoints:" there should be multiple ips corresponding to each service.
+#List ingress "kubectl get services -n ingress-nginx"
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-ing
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: web-svc # This is the value set in service: metadata.name
+            port:
+              number: 80
+  ingressClassName: nginx

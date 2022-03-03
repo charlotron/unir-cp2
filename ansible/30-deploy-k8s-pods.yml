@@ -1,0 +1,72 @@
+---
+
+- hosts: master
+  become: true
+  tasks:
+
+    # ----------- COPY KUBERNETES YML FILES -----
+
+    - name: Clear directory
+      shell: rm -rf ~/kubernetes
+
+    - name: Create remote folder kubernetes
+      file:
+        path: ~/kubernetes
+        state: directory
+        mode: 0755
+
+    - name: Copy local kubernetes deployments to remote machine
+      copy:
+        src: ../kubernetes/
+        dest: ~/kubernetes
+        mode: 0777
+        directory_mode:
+
+    # ----------- CLEAR PREVIOUS PODS/SVC/INGRESS -----
+
+    - name: Check for previous ingress if any
+      shell: kubectl get ingress | grep web- | cut -d' ' -f 1
+      register: output
+
+    - name: Clear previous ingress
+      shell: kubectl delete ingress {{item}}
+      loop: "{{ output.stdout_lines }}"
+      when: output.stdout != ''
+
+    - name: Check for previous services if any
+      shell: kubectl get svc | grep web- | cut -d' ' -f 1
+      register: output
+
+    - name: Clear previous services
+      shell: kubectl delete svc {{item}}
+      loop: "{{ output.stdout_lines }}"
+      when: output.stdout != ''
+
+    - name: Check for previous pods if any
+      shell: kubectl get pods | grep web- | cut -d' ' -f 1
+      register: output
+
+    - name: Clear previous services
+      shell: kubectl delete pods {{item}}
+      loop: "{{ output.stdout_lines }}"
+      when: output.stdout != ''
+
+    - name: Check for previous deployments if any
+      shell: kubectl get deployments | grep web- | cut -d' ' -f 1
+      register: output
+
+    - name: Clear previous deployments
+      shell: kubectl delete deployments {{item}}
+      loop: "{{ output.stdout_lines }}"
+      when: output.stdout != ''
+
+    # ----------- CREATE NEW PODS/SVC/INGRESS -----
+
+    - name: Execute every deployment in 0-deployments dir
+      shell: for i in ~/kubernetes/0-deployments/*.yml; do kubectl apply -f  $i; done;
+
+    - name: Execute every service in 1-services dir
+      shell: for i in ~/kubernetes/1-services/*.yml; do kubectl apply -f  $i; done;
+
+    - name: Execute every ingress in 2-ingress dir
+      shell: for i in ~/kubernetes/2-ingress/*.yml; do kubectl apply -f  $i; done;

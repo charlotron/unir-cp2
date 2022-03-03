@@ -1,7 +1,8 @@
+---
+
 - hosts: workers
   become: yes
   gather_facts: yes
-
   tasks:
 
     - name: Clear kubernetes node if already set any
@@ -9,7 +10,7 @@
 
     - name: Copy previously stored join command from kubernetes cluster
       copy:
-       src: .buffer/kubernetes_join_cmd
+       src: /tmp/buffer/kubernetes_join_cmd
        dest: /root/kubernetes_join.sh
        mode: 0777
 

@@ -1,9 +1,11 @@
 ---
 
 - hosts: master
-  gather_facts: yes
   become: true
+  gather_facts: yes
   tasks:
+
+    # ----------- INIT CLUSTER -----
 
     - name: Clear kubernetes cluster if already set any
       shell:  kubeadm reset -f
@@ -23,12 +25,10 @@
         dest: ~/.kube/config
         remote_src: yes
 
-    - name: Install Calico
-      shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+    # ----------- PREPARE JOIN COMMAND FOR WORKERS -----
 
-    - name: Generate new joining token
+    - name: Generate new joining token (for workers)
       shell: kubeadm token create --print-join-command
-      #shell: kubeadm token create --print-join-command | sed -E 's/[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+(:[0-9]+)/{{hostvars[inventory_hostname].ansible_host}}\1/g'
       register: kubernetes_join_command
 
     - name: Printing generated join command
@@ -36,4 +36,48 @@
         msg: "{{ kubernetes_join_command.stdout }}"
 
     - name: Save join command in local file
-      local_action: copy content="{{ kubernetes_join_command.stdout_lines[0] }} --v=5" dest=".buffer/kubernetes_join_cmd" mode=0777
+      local_action: copy content="{{ kubernetes_join_command.stdout_lines[0] }} --v=5" dest="/tmp/buffer/kubernetes_join_cmd" mode=0777
+
+    # ----------- INSTALL SDN: CALICO -----
+
+    - name: Install SDN - Calico
+      shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+    # ----------- INSTALL INGRESS CONTROLLER -----
+
+    - name: Install Helm
+      shell: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | /bin/bash
+
+    - name: Install Ingress Controller (nginx-ingress) using helm enabling host network, which allows translating ingress ports to host port directly
+      shell: helm install stable/nginx-ingress --set controller.hostNetwork=true,controller.service.type="",controller.kind=DaemonSet
+      #shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+
+    # ----------- CREATE AN ADMIN USER TO CONTROL KUBERNETES -----
+
+    - name: Create group kubeadm if not found
+      shell:  groupadd kubeadmin || true
+
+    - name: Create user kubeadm if not found
+      shell:  useradd -md /home/kubeadmin kubeadmin -g kubeadmin --shell /bin/bash || true
+
+    - name: Preparing .kube dir for user kubeadmin
+      file:
+        path: /home/kubeadmin/.kube
+        state: directory
+        mode: 0755
+        owner: kubeadmin
+
+    - name: Copy admin.conf to .kube dir
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/kubeadmin/.kube/config
+        remote_src: yes
+        owner: kubeadmin
+
+    - name: Ensure there is not kubeadmin entry in sudoers file
+      lineinfile: dest=/etc/sudoers
+                  state=absent
+                  search_string="kubeadmin"
+
+    - name: Add kubeadmin to sudoers file
+      shell:  echo "kubeadmin ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers

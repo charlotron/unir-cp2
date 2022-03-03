@@ -1,0 +1,23 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-pod # This is the prefix for the pods generated and displayed by "kubectl get pods" cmd
+  labels:
+    app: web-pod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web-pod # This is the value referenced in service: spec.selector
+  template:
+    metadata:
+      labels:
+        app: web-pod # This one has to be equals to the spec.selector.matcLabels.app value
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.17.1-alpine
+        ports:
+        - containerPort: 80

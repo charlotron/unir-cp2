@@ -1,0 +1,14 @@
+---
+
+#To check if pods are linked to this service: "kubectl describe svc web-svc", under the "Endpoints:" there should be multiple ips corresponding to each service.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc # This is the name of the service, and the one displayed by "kubectl get service" cmd
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: web-pod # This is the value set deployment: spec.selector.matcLabels.app
