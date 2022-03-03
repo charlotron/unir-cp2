@@ -43,9 +43,9 @@
       content: |
         #!/bin/sh
 
-        NFS_HOST={{ item }}
-        NFS_PORT={{ hostvars[item].ansible_port | default('22') }}
-        NFS_MOUNTABLE_DIR=/srv/shared
+        SSHFS_HOST={{ item }}
+        SSHFS_PORT={{ hostvars[item].ansible_port | default('22') }}
+        SSHFS_MOUNTABLE_DIR=/srv/shared
         LOCAL_MOUNT_DIR=/home/ansible/remote/
         LOCAL_USER=ansible
 
@@ -55,7 +55,7 @@
 
         case "$1" in
         start)  log_daemon_msg "Mounting mount point" "sshfsmount"
-                su $LOCAL_USER -c "sshfs -o idmap=user $NFS_HOST:$NFS_MOUNTABLE_DIR -p $NFS_PORT $LOCAL_MOUNT_DIR"
+                su $LOCAL_USER -c "sshfs -o idmap=user $SSHFS_HOST:$SSHFS_MOUNTABLE_DIR -p $SSHFS_PORT $LOCAL_MOUNT_DIR"
 
                 ;;
         stop)   log_daemon_msg "Stopping all sshfs instances"
