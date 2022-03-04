@@ -1,4 +1,5 @@
 ---
+# Connect to a single pod: kubectl exec -ti web-pod-********* -- /bin/sh
 
 apiVersion: apps/v1
 kind: Deployment
@@ -21,3 +22,10 @@ spec:
         image: nginx:1.17.1-alpine
         ports:
         - containerPort: 80
+        volumeMounts:
+        - name: web-site-pvc #This has to be the same as below "volumes.claimName"
+          mountPath: /usr/share/nginx/html # This is the static folder
+      volumes:
+      - name: web-site-pvc
+        persistentVolumeClaim:
+          claimName: web-nfs-pvc

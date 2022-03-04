@@ -22,7 +22,7 @@
         mode: 0777
         directory_mode:
 
-    # ----------- CLEAR PREVIOUS PODS/SVC/INGRESS -----
+    # ----------- CLEAR PREVIOUS PV/PVC/PODS/SVC/INGRESS -----
 
     - name: Check for previous ingress if any
       shell: kubectl get ingress | grep web- | cut -d' ' -f 1
@@ -46,8 +46,26 @@
       shell: kubectl get pods | grep web- | cut -d' ' -f 1
       register: output
 
-    - name: Clear previous services
+    - name: Clear previous pods
       shell: kubectl delete pods {{item}}
+      loop: "{{ output.stdout_lines }}"
+      when: output.stdout != ''
+
+    - name: Check for previous pvc if any
+      shell: kubectl get pvc | grep web- | cut -d' ' -f 1
+      register: output
+
+    - name: Clear previous pvc
+      shell: kubectl delete pvc {{item}}
+      loop: "{{ output.stdout_lines }}"
+      when: output.stdout != ''
+
+    - name: Check for previous pv if any
+      shell: kubectl get pv | grep web- | cut -d' ' -f 1
+      register: output
+
+    - name: Clear previous pv
+      shell: kubectl delete pv {{item}}
       loop: "{{ output.stdout_lines }}"
       when: output.stdout != ''
 
@@ -60,13 +78,16 @@
       loop: "{{ output.stdout_lines }}"
       when: output.stdout != ''
 
-    # ----------- CREATE NEW PODS/SVC/INGRESS -----
+    # ----------- CREATE NEW PV/PODS/SVC/INGRESS -----
 
-    - name: Execute every deployment in 0-deployments dir
-      shell: for i in ~/kubernetes/0-deployments/*.yml; do kubectl apply -f  $i; done;
+    - name: Execute every deployment in 0-persistent-volume dir
+      shell: for i in ~/kubernetes/0-persistent-volume/*.yml; do kubectl apply -f  $i; done;
 
-    - name: Execute every service in 1-services dir
-      shell: for i in ~/kubernetes/1-services/*.yml; do kubectl apply -f  $i; done;
+    - name: Execute every deployment in 1-deployments dir
+      shell: for i in ~/kubernetes/1-deployments/*.yml; do kubectl apply -f  $i; done;
 
-    - name: Execute every ingress in 2-ingress dir
-      shell: for i in ~/kubernetes/2-ingress/*.yml; do kubectl apply -f  $i; done;
+    - name: Execute every service in 2-services dir
+      shell: for i in ~/kubernetes/2-services/*.yml; do kubectl apply -f  $i; done;
+
+    - name: Execute every ingress in 3-ingress dir
+      shell: for i in ~/kubernetes/3-ingress/*.yml; do kubectl apply -f  $i; done;

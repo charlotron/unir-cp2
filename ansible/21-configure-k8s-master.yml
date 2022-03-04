@@ -45,12 +45,8 @@
 
     # ----------- INSTALL INGRESS CONTROLLER -----
 
-    - name: Install Helm
-      shell: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | /bin/bash
-
-    - name: Install Ingress Controller (nginx-ingress) using helm enabling host network, which allows translating ingress ports to host port directly
-      shell: helm install stable/nginx-ingress --set controller.hostNetwork=true,controller.service.type="",controller.kind=DaemonSet
-      #shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+    - name: Install Ingress Controller (nginx-ingress)
+      shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
 
     # ----------- CREATE AN ADMIN USER TO CONTROL KUBERNETES -----
 

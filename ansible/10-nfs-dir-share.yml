@@ -1,5 +1,7 @@
 ---
 
+# Check remote mounts: showmount --exports 10.10.10.40
+
 - hosts: nfs
   gather_facts: yes
   tasks:
@@ -16,10 +18,10 @@
 
     - name: Create a test file to check if remote mount worked
       copy:
-        dest: "/srv/share/works!"
+        dest: "/srv/share/index.html"
         mode: a+x
         content: |
-          remote mount worked!
+
 
     - name: Clean exports files (to allow multiple runs)
       become: true

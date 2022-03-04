@@ -50,12 +50,8 @@
         masked: no
         state: started
 
-    - name: Sleep for a while then continue with play (seems the service takes a little to wake up)
-      wait_for:
-        timeout: 10
-
-    - name: Enable ntp
-      shell: timedatectl set-ntp true
+    - name: Enable ntp (60 seconds later)
+      shell: sleep 60 & timedatectl set-ntp true || true
 
     - name: Sync date now
       shell: chronyd -q 'server pool.ntp.org iburst'
