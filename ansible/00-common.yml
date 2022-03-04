@@ -51,7 +51,9 @@
         state: started
 
     - name: Enable ntp (60 seconds later)
-      shell: sleep 60 & timedatectl set-ntp true || true
+      shell: (sleep 60 && timedatectl set-ntp true & || true)
+      async: 10
+      poll: 0
 
     - name: Sync date now
       shell: chronyd -q 'server pool.ntp.org iburst'

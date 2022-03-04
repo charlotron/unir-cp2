@@ -91,3 +91,17 @@
 
     - name: Execute every ingress in 3-ingress dir
       shell: for i in ~/kubernetes/3-ingress/*.yml; do kubectl apply -f  $i; done;
+
+    # ----------- EXPOSE INGRESS PORT -----
+
+    - name: Detect exposed port
+      shell: kubectl get svc --namespace=haproxy-controller | grep NodePort | awk '{print $5}' | perl -p -e 's/^.*80:([0-9]+).*$/$1/'
+      register: ports
+
+    - name: Detect exposed port with ip
+      shell: "ip a | grep inet | grep -v inet6 | perl -pi -e 's/.*inet ([0-9.]+).*/$1:{{ports.stdout_lines[0]}}/g'"
+      register: ips
+
+    - name: You can retrieve front with the following ip/port
+      debug:
+        msg: "{{ ips.stdout}}"

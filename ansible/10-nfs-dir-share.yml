@@ -21,7 +21,15 @@
         dest: "/srv/share/index.html"
         mode: a+x
         content: |
-
+          <!DOCTYPE html>
+          <html>
+            <head><title>Devops Course - Worked!</title></head>
+            <body style="padding:20px;text-align:center;font-family:arial">
+                <h1>Devops Course Home</h1>
+                <p>This is a sample webpage deployed under kubernetes using ansible on an nginx server.</p><br>
+                <img style="margin:40px" src="https://www.freepnglogos.com/uploads/doraemon-png/download-doraemon-png-transparent-image-and-clipart-33.png">
+            </body>
+          </html>
 
     - name: Clean exports files (to allow multiple runs)
       become: true

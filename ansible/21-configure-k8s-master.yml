@@ -45,8 +45,11 @@
 
     # ----------- INSTALL INGRESS CONTROLLER -----
 
-    - name: Install Ingress Controller (nginx-ingress)
-      shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+    #- name: Install Ingress Controller (nginx-ingress)
+    #  shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+
+    - name: Install Haproxy Ingress
+      shell: kubectl apply -f https://raw.githubusercontent.com/haproxytech/kubernetes-ingress/master/deploy/haproxy-ingress.yaml
 
     # ----------- CREATE AN ADMIN USER TO CONTROL KUBERNETES -----
 
