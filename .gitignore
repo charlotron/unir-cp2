@@ -4,4 +4,7 @@
 #Terraform related
 **/*lock*
 **/*.tfstate*
-.terraform
+**/.terraform
+
+#Environment file
+.env

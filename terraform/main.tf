@@ -7,10 +7,9 @@ terraform {
   }
 }
 
-
 # Creating our resource group
-resource "azurerm_resource_group" "devops-cp2-group" {
-  name     = "devops-cp2-ccr-rg"
+resource "azurerm_resource_group" "resgroup" {
+  name     = "cp2resgroup"
   location = var.location
 
   tags = {
@@ -19,10 +18,10 @@ resource "azurerm_resource_group" "devops-cp2-group" {
 }
 
 # Create the storage account to save all account related data
-resource "azurerm_storage_account" "stAccount" {
-  name                     = "devopscp2ccrsg"
-  resource_group_name      = azurerm_resource_group.devops-cp2-group.name
-  location                 = azurerm_resource_group.devops-cp2-group.location
+resource "azurerm_storage_account" "staccount" {
+  name                     = var.storage_account
+  resource_group_name      = azurerm_resource_group.resgroup.name
+  location                 = azurerm_resource_group.resgroup.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 
