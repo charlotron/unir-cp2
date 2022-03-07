@@ -1,2 +1,7 @@
+#IDE related
 .idea
-/tmp/buffer
+
+#Terraform related
+**/*lock*
+**/*.tfstate*
+.terraform
