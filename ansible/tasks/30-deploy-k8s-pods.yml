@@ -17,7 +17,7 @@
 
     - name: Copy local kubernetes deployments to remote machine
       copy:
-        src: ../kubernetes/
+        src: ../../kubernetes/
         dest: ~/kubernetes
         mode: 0777
         directory_mode:
@@ -42,21 +42,22 @@
       loop: "{{ output.stdout_lines }}"
       when: output.stdout != ''
 
-    - name: Check for previous pods if any
-      shell: kubectl get pods | grep web- | cut -d' ' -f 1
-      register: output
-
-    - name: Clear previous pods
-      shell: kubectl delete pods {{item}}
-      loop: "{{ output.stdout_lines }}"
-      when: output.stdout != ''
+#     This has no case, it will be re-deployed
+#    - name: Check for previous pods if any
+#      shell: kubectl get pods | grep web- | cut -d' ' -f 1
+#      register: output
+#
+#    - name: Clear previous pods
+#      shell: kubectl delete pods {{item}}
+#      loop: "{{ output.stdout_lines }}"
+#      when: output.stdout != ''
 
     - name: Check for previous pvc if any
       shell: kubectl get pvc | grep web- | cut -d' ' -f 1
       register: output
 
     - name: Clear previous pvc
-      shell: kubectl delete pvc {{item}}
+      shell: kubectl delete pvc --grace-period=0 --force {{item}}
       loop: "{{ output.stdout_lines }}"
       when: output.stdout != ''
 
@@ -65,7 +66,7 @@
       register: output
 
     - name: Clear previous pv
-      shell: kubectl delete pv {{item}}
+      shell: kubectl delete pv --grace-period=0 --force {{item}}
       loop: "{{ output.stdout_lines }}"
       when: output.stdout != ''
 
@@ -96,12 +97,7 @@
 
     - name: Detect exposed port
       shell: kubectl get svc --namespace=haproxy-controller | grep NodePort | awk '{print $5}' | perl -p -e 's/^.*80:([0-9]+).*$/$1/'
-      register: ports
+      register: port
 
-    - name: Detect exposed port with ip
-      shell: "ip a | grep inet | grep -v inet6 | perl -pi -e 's/.*inet ([0-9.]+).*/$1:{{ports.stdout_lines[0]}}/g'"
-      register: ips
-
-    - name: You can retrieve front with the following ip/port
-      debug:
-        msg: "{{ ips.stdout}}"
+    - name: Save port in local file
+      local_action: copy content="{{ port.stdout_lines[0] }}" dest="/tmp/kubernetes_ingress_port" mode=0777

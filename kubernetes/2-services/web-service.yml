@@ -1,5 +1,4 @@
 ---
-
 #To check if pods are linked to this service: "kubectl describe svc web-svc", under the "Endpoints:" there should be multiple ips corresponding to each service.
 
 apiVersion: v1

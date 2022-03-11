@@ -11,7 +11,7 @@
       shell:  kubeadm reset -f
 
     - name: Initialize kubernetes cluster
-      shell:  kubeadm init --apiserver-advertise-address={{hostvars[inventory_hostname].ansible_host}} --pod-network-cidr=10.10.100.0/24
+      shell:  kubeadm init --apiserver-advertise-address={{hostvars[inventory_hostname].local_ip}} --pod-network-cidr=10.10.100.0/24
 
     - name: Preparing .kube dir
       file:
@@ -36,12 +36,13 @@
         msg: "{{ kubernetes_join_command.stdout }}"
 
     - name: Save join command in local file
-      local_action: copy content="{{ kubernetes_join_command.stdout_lines[0] }} --v=5" dest="/tmp/buffer/kubernetes_join_cmd" mode=0777
+      local_action: copy content="{{ kubernetes_join_command.stdout_lines[0] }} --v=5" dest="/tmp/kubernetes_join_cmd" mode=0777
 
     # ----------- INSTALL SDN: CALICO -----
 
     - name: Install SDN - Calico
       shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+      #shell: kubectl apply -f https://docs.projectcalico.org/manifests/canal.yaml
 
     # ----------- INSTALL INGRESS CONTROLLER -----
 

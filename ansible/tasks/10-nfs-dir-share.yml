@@ -5,7 +5,7 @@
 - hosts: nfs
   gather_facts: yes
   tasks:
-    - name: Install nfs-server-kernel package
+    - name: Install "nfs-server-kernel" package
       become: true
       apt:
         update_cache: true
@@ -37,7 +37,7 @@
 
     - name: (only for local nfs) Create one line for each exports (comment with the name of the host jumpline /srv/share and ip then jumpline)
       become: true
-      shell: echo "#{{ item }}\n/srv/share\t{{ hostvars[item].ansible_host }}(rw,no_root_squash,no_subtree_check)\n" >> /etc/exports
+      shell: echo "#{{ item }}\n/srv/share\t{{ hostvars[item].local_ip }}(rw,no_root_squash,no_subtree_check)\n" >> /etc/exports
       loop: "{{ [groups['workers'],groups['master']] | flatten(1) }}" #This takes two lists and unifies them as only one
 
     - name: Enable service rpcbind
@@ -63,12 +63,15 @@
   gather_facts: yes
   tasks:
 
-    - name: Install nfs client packages
+    - name: Install the "nfs client" package
       become: true
       apt:
         update_cache: true
         pkg:
         - nfs-common
+
+    # The following steps are not needed becouse kubernetes will use a volume provider that will connect via nfs to
+    # nfs server directly so this local mount wont be used, but it is usefull to check if nfs comunication is available
 
     - name: Ensure local dir is not mounted
       become: true
@@ -88,7 +91,7 @@
 
     - name: Add lines to fstab to mount the remote folder
       become: true
-      shell: echo "# Remote mount nfs.local dir /srv/share dir on local /home/ansible/remote \nnfs.local:/srv/share /home/ansible/remote  nfs      defaults    0       0" >> /etc/fstab
+      shell: echo "# Remote mount nfs.local dir /srv/share dir on local /home/ansible/remote \nnfs.local:/srv/share /home/ansible/remote  nfs4      defaults    0       0" >> /etc/fstab
 
     - name: Automounts fstab mounts
       become: true

@@ -23,7 +23,7 @@
       when: savedhosts.stat.exists
 
     - name: Adding hosts to internal resolution dns
-      shell: echo "{{ hostvars[item].ansible_host }}\t{{item}}" >> /etc/hosts
+      shell: echo "{{ hostvars[item].local_ip }}\t{{item}}" >> /etc/hosts
       loop: "{{ groups['all'] }}"
 
     - name: Set hostname for every machine
@@ -39,7 +39,7 @@
 
     # ------- CONFIGURING DATE/TIME SYNC WITH NTP SERVER
 
-    - name: Install the package "chrony"
+    - name: Install "chrony" package
       apt:
         name: chrony
 
@@ -50,7 +50,7 @@
         masked: no
         state: started
 
-    - name: Enable ntp (60 seconds later)
+    - name: Enable ntp (60 seconds later to allow proper initialization of service)
       shell: (sleep 60 && timedatectl set-ntp true & || true)
       async: 10
       poll: 0

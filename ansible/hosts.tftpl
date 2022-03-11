@@ -1,0 +1,7 @@
+#This file has been generated with "ansible-inventory-generation.tf"
+[all:vars]
+ansible_user=${ssh_user}
+%{ for group_name in groups ~}%{if group_name != "" }
+[${group_name}]%{ for hostname,hostname_group_name in hostnameGroups ~}%{if group_name == hostname_group_name }
+${hostname} ansible_host=${ips[hostname]} local_ip=${localips[hostname]}
+%{ endif }%{ endfor ~}%{ endif }%{ endfor ~}

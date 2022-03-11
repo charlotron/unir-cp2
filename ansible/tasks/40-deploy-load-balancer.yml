@@ -1,0 +1,27 @@
+---
+
+- hosts: master
+  become: true
+  tasks:
+
+    # ----------- COPY KUBERNETES YML FILES -----
+
+    - name: Install "nginx" to work as a "cheap" load balancer
+      apt:
+        update_cache: true
+        pkg:
+          - nginx
+
+    - name: Create base file for nginx
+      template:
+         src: ../templates/load-balancer-cfg.j2
+         dest: /etc/nginx/sites-available/default
+      vars:
+        port: "{{ lookup('file','/tmp/kubernetes_ingress_port') }}"
+
+    - name: Restart nginx service
+      shell: systemctl restart nginx
+
+    - name: FINISHED! Show url
+      debug:
+        msg: "You can access the app using the following url <http://{{hostvars[inventory_hostname].ansible_host}}"

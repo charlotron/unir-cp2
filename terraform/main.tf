@@ -30,16 +30,3 @@ resource "azurerm_storage_account" "staccount" {
   }
 }
 
-#plan {
-#  name      = "20.04.202111100"
-#  product   = "null"
-#  publisher : "Canonical"
-#}
-#
-#source_image_reference {
-#  offer : "0001-com-ubuntu-confidential-vm-focal",
-#  publisher : "Canonical",
-#  sku : "20_04-lts-cvm",
-#  #urn : "Canonical:0001-com-ubuntu-confidential-vm-focal:20_04-lts-cvm:20.04.202111100",
-#  version : "20.04.202111100"
-#}

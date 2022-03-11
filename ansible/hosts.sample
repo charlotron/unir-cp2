@@ -1,0 +1,12 @@
+#This file can be used as a sample to create a "hosts" file, but much more fun is running terraform apply and generate "hosts" file automatically with generated ips dynamically
+[all:vars]
+ansible_user=ansible
+
+[master]
+master.local ansible_host=<PUBLIC_IP_FOR_SSH_CONNECTION> local_ip=<LOCAL_IP_FOR_CONFIGURATIONS>
+
+[workers]
+worker1.local ansible_host=<PUBLIC_IP_FOR_SSH_CONNECTION> local_ip=<LOCAL_IP_FOR_CONFIGURATIONS>
+
+[nfs]
+nfs.local ansible_host=<PUBLIC_IP_FOR_SSH_CONNECTION> local_ip=<LOCAL_IP_FOR_CONFIGURATIONS>
