@@ -32,8 +32,8 @@ variable "vsubnet_slash_24" {
 
 variable "containers" {
   type = map(object({
-    id              = number,
     #This also is the 4th IP factor (don't expect more than 10 machines, and max is 255-2<broadcast&network)=253 available ips)
+    id              = number,
     size            = string,
     ansiblehostname = string,
     ansiblegroup    = string

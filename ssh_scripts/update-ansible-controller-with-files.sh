@@ -2,6 +2,7 @@
 
 # ---------------------------
 # This script watches over modifications on 'ansible' directory then copies it to remote ansible controller
+# Passing --watch argument to this script will check continuously for changes on this project files and will update the ansible controller with files
 # ---------------------------
 
 MONITORING_DIR=".."
@@ -25,10 +26,12 @@ clear
 echo "===== INITIAL SYNC"
 #create_remote_dirs
 sync_files
-echo "===== START MONITORING"
-echo -n -e "\033]0;Waiting:\007"
-fswatch -e ".~" $MONITORING_DIR | while read -r changed; do
-    echo " -- Detected changes: $changed"
-    sync_files
-    echo -n -e "\033]0;Waiting:\007"
-done
+if [ "$1" == "--watch" ]; then
+  echo "===== START MONITORING"
+  echo -n -e "\033]0;Waiting:\007"
+  fswatch -e ".~" $MONITORING_DIR | while read -r changed; do
+      echo " -- Detected changes: $changed"
+      sync_files
+      echo -n -e "\033]0;Waiting:\007"
+  done
+fi
