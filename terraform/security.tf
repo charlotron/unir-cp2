@@ -1,5 +1,5 @@
 resource "azurerm_network_security_group" "secgroupssh" {
-  name                = "cp2sgnormal"
+  name                = "cp2secg"
   location            = azurerm_resource_group.resgroup.location
   resource_group_name = azurerm_resource_group.resgroup.name
 
@@ -28,7 +28,7 @@ resource "azurerm_network_interface_security_group_association" "secgroupssh" {
 }
 
 resource "azurerm_network_security_group" "secgrouplb" {
-  name                = "cp2sgnfs"
+  name                = "cp2secglb"
   location            = azurerm_resource_group.resgroup.location
   resource_group_name = azurerm_resource_group.resgroup.name
 
@@ -61,7 +61,7 @@ resource "azurerm_network_security_group" "secgrouplb" {
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "secgroupas" {
+resource "azurerm_network_interface_security_group_association" "secgrouplb" {
   for_each = {for key, val in var.containers :key => val if key=="kubernetesmaster"}
 
   network_interface_id      = azurerm_network_interface.nics[each.key].id

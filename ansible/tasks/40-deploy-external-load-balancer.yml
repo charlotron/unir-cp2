@@ -1,12 +1,16 @@
 ---
 
+#
+# I will use nginx as a cheap load balancer to show behaviour of cloud nlb, that I wont be using for practical matters.
+#
+
 - hosts: master
   become: true
   tasks:
 
     # ----------- COPY KUBERNETES YML FILES -----
 
-    - name: Install "nginx" to work as a "cheap" load balancer
+    - name: Install "nginx"
       apt:
         update_cache: true
         pkg:
