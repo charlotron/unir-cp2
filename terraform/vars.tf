@@ -54,14 +54,14 @@ variable "containers" {
     },
     "kubernetesworker1" = {
       id              = "30",
-      size            = "Standard_B1s", #2vcpus 8gb ram 16gb hd
+      size            = "Standard_B1s", #1vcpu 1gb ram 4b hd
       ansiblehostname = "worker1.local",
       ansiblegroup    = "workers"
     },
 #   We have a limit of 6 cores by region due to student account so i cannot wake up another worker node
     "kubernetesworker2" = {
       id              = "31",
-      size            = "Standard_B1s", #2vcpus 8gb ram 16gb hd
+      size            = "Standard_B1s", #1vcpu 1gb ram 4b hd
       ansiblehostname = "worker2.local",
       ansiblegroup    = "workers"
     },
